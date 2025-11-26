@@ -5,6 +5,9 @@ export interface PrayerTimings {
   Asr: string;
   Maghrib: string;
   Isha: string;
+  Imsak: string;
+  Midnight: string;
+  Sunset: string;
   [key: string]: string;
 }
 
@@ -80,4 +83,11 @@ export interface User {
     zip: string;
   };
   joinedDate: string;
+}
+
+export interface MenuItem {
+  id: string;
+  label: string;
+  icon?: string;
+  children?: MenuItem[];
 }
