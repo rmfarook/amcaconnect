@@ -9,7 +9,7 @@ const AssistantChat: React.FC = () => {
     {
       id: 'welcome',
       role: 'model',
-      text: 'Assalamu Alaikum! I am your UmmahConnect Assistant. How can I help you today?',
+      text: 'Assalamu Alaikum! I am your AmcaConnect Assistant. How can I help you today?',
       timestamp: new Date(),
     },
   ]);

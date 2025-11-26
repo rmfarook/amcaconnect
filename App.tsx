@@ -237,9 +237,9 @@ const AboutPage = () => (
         <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
             <i className="fas fa-mosque"></i>
         </div>
-        <h2 className="text-3xl font-serif font-bold text-gray-800 mb-4">About UmmahConnect</h2>
+        <h2 className="text-3xl font-serif font-bold text-gray-800 mb-4">About AmcaConnect</h2>
         <p className="text-gray-600 mb-6 leading-relaxed">
-            UmmahConnect is dedicated to leveraging technology to strengthen the bonds of the Muslim community. 
+            AmcaConnect is dedicated to leveraging technology to strengthen the bonds of the Muslim community. 
             We believe in providing accessible, trustworthy, and beneficial resources that cater to the spiritual 
             and social needs of believers in the modern world.
         </p>
@@ -309,7 +309,7 @@ const App: React.FC = () => {
         </main>
         
         <footer className="bg-white border-t border-gray-200 mt-12 py-8 text-center text-sm text-gray-500 hidden md:block">
-            <p>&copy; 2024 UmmahConnect. All Rights Reserved.</p>
+            <p>&copy; 2024 AmcaConnect. All Rights Reserved.</p>
         </footer>
 
         <AssistantChat />

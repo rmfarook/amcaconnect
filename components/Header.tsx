@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, user, onLo
               <i className="fas fa-mosque"></i>
             </div>
             <div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-800 font-serif leading-none">UmmahConnect</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-800 font-serif leading-none">AmcaConnect</h1>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest">Community Portal</p>
             </div>
           </div>
