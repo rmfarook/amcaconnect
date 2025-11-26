@@ -1,0 +1,7 @@
+{
+  "name": "AmcAConnect",
+  "description": "A comprehensive digital portal for the Muslim community featuring prayer times, community events, Islamic resources, and an AI-powered spiritual assistant.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
