@@ -1,3 +1,4 @@
+
 export interface PrayerTimings {
   Fajr: string;
   Sunrise: string;
@@ -90,4 +91,31 @@ export interface MenuItem {
   label: string;
   icon?: string;
   children?: MenuItem[];
+}
+
+export interface Leader {
+  id: number;
+  name: string;
+  role: string;
+  description: string;
+  imageUrl: string;
+}
+
+export interface SiteConfig {
+  hero: {
+    title: string;
+    quote: string;
+    reference: string;
+  };
+  about: {
+    description: string;
+    vision: string;
+    mission: string[];
+  };
+  contact: {
+    address: string;
+    phone: string;
+    email: string;
+    mapUrl: string;
+  };
 }

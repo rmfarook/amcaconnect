@@ -9,7 +9,7 @@ import AuthPage from './components/AuthPage';
 import { dataService } from './services/dataService';
 import { authService } from './services/authService';
 import { getCityPrayerTimes, getPrayerTimes } from './services/prayerService';
-import { Event, Article, DonationItem, User, PrayerData } from './types';
+import { Event, Article, DonationItem, User, PrayerData, Leader, SiteConfig } from './types';
 
 // --- NEW PAGES ---
 
@@ -118,28 +118,35 @@ const DetailedPrayerPage = () => {
     );
 };
 
-const LeadershipPage = () => (
-    <div className="animate-fade-in max-w-4xl mx-auto">
-        <h2 className="text-3xl font-serif font-bold text-gray-800 mb-8 text-center">Community Leadership</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-                    <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden border-2 border-emerald-50">
-                        {/* Using randomuser.me/api/portraits/men/ ensures male images */}
-                        <img 
-                            src={`https://randomuser.me/api/portraits/men/${i + 30}.jpg`} 
-                            alt="Leader" 
-                            className="w-full h-full object-cover"
-                        />
+const LeadershipPage = () => {
+    const [leaders, setLeaders] = useState<Leader[]>([]);
+    
+    useEffect(() => {
+        setLeaders(dataService.getLeaders());
+    }, []);
+
+    return (
+        <div className="animate-fade-in max-w-4xl mx-auto">
+            <h2 className="text-3xl font-serif font-bold text-gray-800 mb-8 text-center">Community Leadership</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+                {leaders.map(leader => (
+                    <div key={leader.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden border-2 border-emerald-50">
+                            <img 
+                                src={leader.imageUrl || `https://randomuser.me/api/portraits/men/${leader.id + 30}.jpg`} 
+                                alt={leader.name} 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <h3 className="font-bold text-lg text-gray-800">{leader.name}</h3>
+                        <p className="text-emerald-600 text-sm mb-2">{leader.role}</p>
+                        <p className="text-gray-500 text-sm">{leader.description}</p>
                     </div>
-                    <h3 className="font-bold text-lg text-gray-800">Brother Name {i}</h3>
-                    <p className="text-emerald-600 text-sm mb-2">Committee Member</p>
-                    <p className="text-gray-500 text-sm">Serving the AMCA community with dedication.</p>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const MaktabPage = () => (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -219,66 +226,74 @@ const GenericProgramPage = ({ title, subtitle, items, onContactClick }: any) => 
     </div>
 );
 
-const ContactPage = () => (
-    <div className="animate-fade-in max-w-4xl mx-auto">
-        <h2 className="text-3xl font-serif font-bold text-gray-800 mb-8 text-center">Contact Us</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                <h3 className="font-bold text-lg mb-6 text-emerald-700 border-b border-gray-100 pb-2">Get in Touch</h3>
-                
-                <div className="space-y-6">
-                    <div className="flex items-start">
-                        <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
-                            <i className="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div className="ml-4">
-                            <h4 className="font-bold text-gray-800">Visit Us</h4>
-                            <p className="text-gray-600 text-sm leading-relaxed mt-1">
-                                AMCA Masjid<br/>
-                                Ashok Nagar, 4th Avenue<br/>
-                                Chennai - 83
-                            </p>
-                        </div>
-                    </div>
+const ContactPage = () => {
+    const [config, setConfig] = useState<SiteConfig | null>(null);
 
-                    <div className="flex items-start">
-                        <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
-                            <i className="fas fa-phone"></i>
-                        </div>
-                        <div className="ml-4">
-                            <h4 className="font-bold text-gray-800">Call Us</h4>
-                            <p className="text-gray-600 text-sm mt-1">9876543210</p>
-                        </div>
-                    </div>
+    useEffect(() => {
+        setConfig(dataService.getSiteConfig());
+    }, []);
 
-                    <div className="flex items-start">
-                        <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
-                            <i className="fas fa-envelope"></i>
+    if (!config) return <div>Loading...</div>;
+
+    return (
+        <div className="animate-fade-in max-w-4xl mx-auto">
+            <h2 className="text-3xl font-serif font-bold text-gray-800 mb-8 text-center">Contact Us</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                    <h3 className="font-bold text-lg mb-6 text-emerald-700 border-b border-gray-100 pb-2">Get in Touch</h3>
+                    
+                    <div className="space-y-6">
+                        <div className="flex items-start">
+                            <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
+                                <i className="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div className="ml-4">
+                                <h4 className="font-bold text-gray-800">Visit Us</h4>
+                                <p className="text-gray-600 text-sm leading-relaxed mt-1">
+                                    {config.contact.address}
+                                </p>
+                            </div>
                         </div>
-                        <div className="ml-4">
-                            <h4 className="font-bold text-gray-800">Email Us</h4>
-                            <p className="text-gray-600 text-sm mt-1">reachus_amca@gmail.com</p>
+
+                        <div className="flex items-start">
+                            <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
+                                <i className="fas fa-phone"></i>
+                            </div>
+                            <div className="ml-4">
+                                <h4 className="font-bold text-gray-800">Call Us</h4>
+                                <p className="text-gray-600 text-sm mt-1">{config.contact.phone}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start">
+                            <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-1">
+                                <i className="fas fa-envelope"></i>
+                            </div>
+                            <div className="ml-4">
+                                <h4 className="font-bold text-gray-800">Email Us</h4>
+                                <p className="text-gray-600 text-sm mt-1">{config.contact.email}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Map Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-96 md:h-auto">
-                <iframe 
-                    title="AMCA Masjid Location"
-                    src="https://maps.google.com/maps?q=13.039697878828262,80.2146701784837&z=15&output=embed" 
-                    width="100%" 
-                    height="100%" 
-                    style={{border:0}} 
-                    allowFullScreen 
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+                {/* Map Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-96 md:h-auto">
+                    <iframe 
+                        title="Location Map"
+                        src={config.contact.mapUrl}
+                        width="100%" 
+                        height="100%" 
+                        style={{border:0}} 
+                        allowFullScreen 
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const DonatePage = () => (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -345,31 +360,43 @@ const MediaPage = ({ type }: { type: 'photo' | 'video' | 'mixed' | 'announcement
 
 // --- EXISTING COMPONENTS (Home, About, Articles, Events) ---
 
-const HeroSection = () => (
-  <div className="relative bg-emerald-900 text-white rounded-2xl overflow-hidden mb-8 shadow-xl">
-    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
-    <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 to-emerald-800/60"></div>
-    <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row items-center">
-      <div className="md:w-2/3 mb-8 md:mb-0">
-        <span className="inline-block py-1 px-3 rounded-full bg-gold-500/20 text-gold-400 text-xs font-semibold tracking-wider mb-4 border border-gold-500/30">DAILY INSPIRATION</span>
-        <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight">
-          "Indeed, with hardship [will be] ease."
-        </h2>
-        <p className="text-emerald-100 text-lg mb-8 max-w-xl">
-          Quran 94:6 - A reminder that every challenge carries within it the seeds of relief and success.
-        </p>
-        <button className="bg-gold-500 text-emerald-950 font-bold py-3 px-8 rounded-full hover:bg-gold-400 transition-colors shadow-lg shadow-gold-500/20">
-          Read Today's Reflection
-        </button>
-      </div>
-      <div className="md:w-1/3 flex justify-center">
-        <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/20">
-           <i className="fas fa-quran text-6xl text-emerald-200"></i>
+const HeroSection = () => {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+  
+  useEffect(() => {
+    setConfig(dataService.getSiteConfig());
+  }, []);
+
+  if (!config) return null;
+
+  return (
+    <div className="relative bg-emerald-900 text-white rounded-2xl overflow-hidden mb-8 shadow-xl">
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 to-emerald-800/60"></div>
+        <div className="relative z-10 p-8 md:p-16 flex flex-col md:flex-row items-center">
+        <div className="md:w-2/3 mb-8 md:mb-0">
+            <span className="inline-block py-1 px-3 rounded-full bg-gold-500/20 text-gold-400 text-xs font-semibold tracking-wider mb-4 border border-gold-500/30">
+                {config.hero.title}
+            </span>
+            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight">
+                {config.hero.quote}
+            </h2>
+            <p className="text-emerald-100 text-lg mb-8 max-w-xl">
+                {config.hero.reference}
+            </p>
+            <button className="bg-gold-500 text-emerald-950 font-bold py-3 px-8 rounded-full hover:bg-gold-400 transition-colors shadow-lg shadow-gold-500/20">
+            Read Today's Reflection
+            </button>
         </div>
-      </div>
+        <div className="md:w-1/3 flex justify-center">
+            <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/20">
+            <i className="fas fa-quran text-6xl text-emerald-200"></i>
+            </div>
+        </div>
+        </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Home = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -484,58 +511,61 @@ const EventsPage = () => {
     );
 };
 
-const AboutCommunityPage = () => (
-    <div className="max-w-4xl mx-auto animate-fade-in space-y-8">
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
-             <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                <i className="fas fa-users"></i>
-            </div>
-            <h2 className="text-3xl font-serif font-bold text-gray-800 mb-4">About the Community</h2>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-                AmcaConnect serves a diverse and vibrant Muslim community. Established in 2024, our goal is to foster brotherhood/sisterhood, 
-                provide educational resources, and serve the wider society with compassion and excellence.
-            </p>
-        </div>
+const AboutCommunityPage = () => {
+    const [config, setConfig] = useState<SiteConfig | null>(null);
 
-        {/* Vision & Mission */}
-        <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-emerald-800 text-white p-8 rounded-xl shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <i className="fas fa-eye text-9xl"></i>
+    useEffect(() => {
+        setConfig(dataService.getSiteConfig());
+    }, []);
+
+    if (!config) return <div>Loading...</div>;
+
+    return (
+        <div className="max-w-4xl mx-auto animate-fade-in space-y-8">
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                    <i className="fas fa-users"></i>
                 </div>
-                <div className="relative z-10">
-                    <h3 className="text-2xl font-serif font-bold mb-4 text-gold-400">Our Vision</h3>
-                    <p className="leading-relaxed text-emerald-50">
-                        To be a beacon of Islamic excellence and spiritual sanctuary that nurtures a righteous, educated, and united community contributing positively to society.
-                    </p>
-                </div>
+                <h2 className="text-3xl font-serif font-bold text-gray-800 mb-4">About the Community</h2>
+                <p className="text-gray-600 mb-6 leading-relaxed whitespace-pre-wrap">
+                    {config.about.description}
+                </p>
             </div>
 
-            <div className="bg-white border-t-4 border-gold-500 p-8 rounded-xl shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5">
-                    <i className="fas fa-bullseye text-9xl text-gray-800"></i>
+            {/* Vision & Mission */}
+            <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-emerald-800 text-white p-8 rounded-xl shadow-md relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <i className="fas fa-eye text-9xl"></i>
+                    </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-serif font-bold mb-4 text-gold-400">Our Vision</h3>
+                        <p className="leading-relaxed text-emerald-50 whitespace-pre-wrap">
+                            {config.about.vision}
+                        </p>
+                    </div>
                 </div>
-                <div className="relative z-10">
-                    <h3 className="text-2xl font-serif font-bold mb-4 text-gray-800">Our Mission</h3>
-                    <ul className="space-y-3 text-gray-600">
-                        <li className="flex items-start">
-                            <i className="fas fa-check-circle text-emerald-500 mt-1 mr-3"></i>
-                            <span>Establish regular prayer and spiritual programs.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <i className="fas fa-check-circle text-emerald-500 mt-1 mr-3"></i>
-                            <span>Provide authentic Islamic education for all ages.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <i className="fas fa-check-circle text-emerald-500 mt-1 mr-3"></i>
-                            <span>Support the needy through Zakat and Sadaqah.</span>
-                        </li>
-                    </ul>
+
+                <div className="bg-white border-t-4 border-gold-500 p-8 rounded-xl shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <i className="fas fa-bullseye text-9xl text-gray-800"></i>
+                    </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-serif font-bold mb-4 text-gray-800">Our Mission</h3>
+                        <ul className="space-y-3 text-gray-600">
+                            {config.about.mission.map((item, idx) => (
+                                <li key={idx} className="flex items-start">
+                                    <i className="fas fa-check-circle text-emerald-500 mt-1 mr-3"></i>
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');

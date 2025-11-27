@@ -1,11 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
-import { Event, Article, DonationItem } from '../types';
+import { Event, Article, DonationItem, Leader, SiteConfig } from '../types';
 
-const AdminDashboard: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const AdminDashboard: React.FC<{ isAuthenticated: boolean; onAuthenticated: () => void; onLogout: () => void }> = ({ isAuthenticated, onAuthenticated, onLogout }) => {
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'events' | 'articles' | 'donations'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'articles' | 'donations' | 'leaders' | 'pages'>('events');
 
   // Login Screen
   if (!isAuthenticated) {
@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
           <p className="text-gray-500 mb-6 text-sm">Enter the PIN to manage portal content.</p>
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (pin === '7860') setIsAuthenticated(true);
+            if (pin === '7860') onAuthenticated();
             else alert('Invalid PIN (Hint: 7860)');
           }}>
             <input
@@ -48,16 +48,18 @@ const AdminDashboard: React.FC = () => {
         {/* Header */}
         <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
           <h2 className="text-2xl font-serif font-bold">Content Management System</h2>
-          <button onClick={() => setIsAuthenticated(false)} className="text-gray-400 hover:text-white">
+          <button onClick={onLogout} className="text-gray-400 hover:text-white">
             <i className="fas fa-sign-out-alt mr-2"></i> Logout
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 bg-slate-50">
+        <div className="flex border-b border-gray-200 bg-slate-50 overflow-x-auto">
           <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} label="Events" icon="fa-calendar-alt" />
           <TabButton active={activeTab === 'articles'} onClick={() => setActiveTab('articles')} label="Articles" icon="fa-newspaper" />
           <TabButton active={activeTab === 'donations'} onClick={() => setActiveTab('donations')} label="Donations" icon="fa-hand-holding-heart" />
+          <TabButton active={activeTab === 'leaders'} onClick={() => setActiveTab('leaders')} label="Leadership" icon="fa-users-cog" />
+          <TabButton active={activeTab === 'pages'} onClick={() => setActiveTab('pages')} label="Site Pages" icon="fa-edit" />
         </div>
 
         {/* Content */}
@@ -65,6 +67,8 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'events' && <EventManager />}
           {activeTab === 'articles' && <ArticleManager />}
           {activeTab === 'donations' && <DonationManager />}
+          {activeTab === 'leaders' && <LeadershipManager />}
+          {activeTab === 'pages' && <PageContentManager />}
         </div>
       </div>
     </div>
@@ -74,7 +78,7 @@ const AdminDashboard: React.FC = () => {
 const TabButton = ({ active, onClick, label, icon }: any) => (
   <button
     onClick={onClick}
-    className={`flex-1 py-4 text-sm font-medium transition-colors flex items-center justify-center space-x-2 border-b-2 ${
+    className={`flex-1 min-w-[120px] py-4 text-sm font-medium transition-colors flex items-center justify-center space-x-2 border-b-2 ${
       active
         ? 'border-emerald-600 text-emerald-600 bg-white'
         : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -366,6 +370,174 @@ const DonationManager = () => {
             )}
         </div>
     );
+};
+
+const LeadershipManager = () => {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [editing, setEditing] = useState<Partial<Leader> | null>(null);
+
+  useEffect(() => {
+    setLeaders(dataService.getLeaders());
+  }, []);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editing) return;
+    if (!editing.name || !editing.role) return alert('Name and Role are required');
+    dataService.saveLeader(editing as Leader);
+    setLeaders(dataService.getLeaders());
+    setEditing(null);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Remove this leader?')) {
+      dataService.deleteLeader(id);
+      setLeaders(dataService.getLeaders());
+    }
+  };
+
+  return (
+    <div>
+       <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-gray-800">Manage Leadership</h3>
+        <button 
+          onClick={() => setEditing({})} 
+          className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700"
+        >
+          <i className="fas fa-plus mr-2"></i> Add Leader
+        </button>
+      </div>
+
+      {editing ? (
+         <form onSubmit={handleSave} className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h4 className="font-bold mb-4">{editing.id ? 'Edit Leader' : 'New Leader'}</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <Input label="Name" value={editing.name} onChange={v => setEditing({...editing, name: v})} />
+            <Input label="Role" value={editing.role} onChange={v => setEditing({...editing, role: v})} />
+            <Input label="Image URL" value={editing.imageUrl} onChange={v => setEditing({...editing, imageUrl: v})} />
+            <div className="md:col-span-2">
+                <Input label="Description" value={editing.description} onChange={v => setEditing({...editing, description: v})} />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Save</button>
+          </div>
+        </form>
+      ) : (
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {leaders.map(leader => (
+              <div key={leader.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+                 <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 overflow-hidden">
+                    <img src={leader.imageUrl} alt={leader.name} className="w-full h-full object-cover" />
+                 </div>
+                 <h4 className="font-bold text-gray-800">{leader.name}</h4>
+                 <p className="text-emerald-600 text-xs mb-2">{leader.role}</p>
+                 <div className="space-x-2 mt-4">
+                    <button onClick={() => setEditing(leader)} className="text-blue-600 text-sm hover:underline">Edit</button>
+                    <button onClick={() => handleDelete(leader.id)} className="text-red-600 text-sm hover:underline">Delete</button>
+                 </div>
+              </div>
+            ))}
+         </div>
+      )}
+    </div>
+  );
+};
+
+const PageContentManager = () => {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    setConfig(dataService.getSiteConfig());
+  }, []);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (config) {
+      dataService.saveSiteConfig(config);
+      alert("Site content updated successfully!");
+    }
+  };
+
+  const updateConfig = (path: string, value: any) => {
+    if (!config) return;
+    const [section, field] = path.split('.');
+    
+    if (section === 'about' && field === 'mission') {
+        // Handle array for mission
+        const newConfig = { ...config };
+        newConfig.about.mission = value.split('\n');
+        setConfig(newConfig);
+        return;
+    }
+
+    setConfig({
+      ...config,
+      [section]: {
+        ...(config as any)[section],
+        [field]: value
+      }
+    });
+  };
+
+  if (!config) return <div>Loading...</div>;
+
+  return (
+    <form onSubmit={handleSave} className="space-y-8">
+       {/* Hero Section */}
+       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h3 className="font-bold text-lg mb-4 text-gray-800 border-b border-gray-200 pb-2">Hero Section (Home)</h3>
+          <div className="space-y-4">
+             <Input label="Title Tag" value={config.hero.title} onChange={v => updateConfig('hero.title', v)} />
+             <div className="md:col-span-2">
+                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Quote</label>
+                 <textarea value={config.hero.quote} onChange={e => updateConfig('hero.quote', e.target.value)} className="w-full p-2 border border-gray-300 rounded" rows={2} />
+             </div>
+             <Input label="Reference / Subtext" value={config.hero.reference} onChange={v => updateConfig('hero.reference', v)} />
+          </div>
+       </div>
+
+       {/* About Page */}
+       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h3 className="font-bold text-lg mb-4 text-gray-800 border-b border-gray-200 pb-2">About Page</h3>
+          <div className="space-y-4">
+             <div>
+                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Description (Main Text)</label>
+                 <textarea value={config.about.description} onChange={e => updateConfig('about.description', e.target.value)} className="w-full p-2 border border-gray-300 rounded" rows={4} />
+             </div>
+             <div>
+                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Vision Statement</label>
+                 <textarea value={config.about.vision} onChange={e => updateConfig('about.vision', e.target.value)} className="w-full p-2 border border-gray-300 rounded" rows={2} />
+             </div>
+             <div>
+                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Mission Points (One per line)</label>
+                 <textarea value={config.about.mission.join('\n')} onChange={e => updateConfig('about.mission', e.target.value)} className="w-full p-2 border border-gray-300 rounded" rows={4} />
+             </div>
+          </div>
+       </div>
+
+       {/* Contact Info */}
+       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h3 className="font-bold text-lg mb-4 text-gray-800 border-b border-gray-200 pb-2">Contact Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="md:col-span-2">
+                <Input label="Address" value={config.contact.address} onChange={v => updateConfig('contact.address', v)} />
+             </div>
+             <Input label="Phone" value={config.contact.phone} onChange={v => updateConfig('contact.phone', v)} />
+             <Input label="Email" value={config.contact.email} onChange={v => updateConfig('contact.email', v)} />
+             <div className="md:col-span-2">
+                <Input label="Google Maps Embed URL" value={config.contact.mapUrl} onChange={v => updateConfig('contact.mapUrl', v)} />
+                <p className="text-xs text-gray-500 mt-1">Paste the 'src' attribute from Google Maps Embed code.</p>
+             </div>
+          </div>
+       </div>
+
+       <div className="flex justify-end">
+          <button type="submit" className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 shadow-lg">Save All Changes</button>
+       </div>
+    </form>
+  );
 };
 
 // UI Helpers
