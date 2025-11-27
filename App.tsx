@@ -540,6 +540,7 @@ const AboutCommunityPage = () => (
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     dataService.init();
@@ -552,12 +553,18 @@ const App: React.FC = () => {
   const handleLogout = () => {
     authService.logout();
     setUser(null);
+    setIsAdmin(false);
     setCurrentPage('home');
   };
 
   const handleLoginSuccess = (user: User) => {
     setUser(user);
     setCurrentPage('home');
+  };
+
+  const handleAdminSuccess = () => {
+      setIsAdmin(true);
+      setCurrentPage('admin');
   };
 
   // Helper to go to contact
@@ -589,18 +596,20 @@ const App: React.FC = () => {
     if (currentPage === 'counseling') return <GenericProgramPage title="Counseling & Support" subtitle="Confidential support for individuals and families." items={[{title:'Marital Counseling', icon:'fa-heart-broken', desc:'Reconciling hearts.'}, {title:'Youth Counseling', icon:'fa-user-shield', desc:'Navigating challenges.'}]} onContactClick={goToContact} />;
     if (currentPage === 'education-assist') return <GenericProgramPage title="Education Support" subtitle="Helping students achieve their potential." items={[{title:'Scholarships', icon:'fa-graduation-cap', desc:'Financial aid.'}, {title:'Tutoring', icon:'fa-chalkboard-teacher', desc:'After-school help.'}]} onContactClick={goToContact} />;
     if (currentPage === 'career') return <GenericProgramPage title="Career Guidance" subtitle="Professional networking and mentorship." items={[{title:'Resume Review', icon:'fa-file-alt', desc:'Expert feedback.'}, {title:'Mentorship', icon:'fa-handshake', desc:'Connect with professionals.'}]} onContactClick={goToContact} />;
-    if (currentPage === 'charity') return <GenericProgramPage title="Charity Drives" subtitle="Serving humanity." items={[{title:'Food Pantry', icon:'fa-utensils', desc:'Weekly distribution.'}, {title:'Emergency Relief', icon:'fa-first-aid', desc:'Rapid response.'}]} onContactClick={goToContact} />;
+    if (currentPage === 'charity') return <GenericProgramPage title="Charity Drives" subtitle="Serving humanity." items={[
+        {title:'Zakat', icon:'fa-hand-holding-heart', desc:'Obligatory charity distributed to the eligible.'}, 
+        {title:'Sadaqah', icon:'fa-coins', desc:'Voluntary charity for mosque maintenance.'}
+    ]} onContactClick={goToContact} />;
 
     // Media
     if (currentPage === 'media-gallery') return <MediaPage type="mixed" />;
     if (currentPage === 'announcements') return <MediaPage type="announcements" />;
 
     // General
-    if (currentPage.startsWith('donate')) return <DonatePage />;
     if (currentPage === 'contact') return <ContactPage />;
     
-    if (currentPage === 'admin') return <AdminDashboard />;
-    if (currentPage === 'auth') return <AuthPage onLoginSuccess={handleLoginSuccess} />;
+    if (currentPage === 'admin') return <AdminDashboard isAuthenticated={isAdmin} onAuthenticated={handleAdminSuccess} onLogout={() => { setIsAdmin(false); setCurrentPage('home'); }} />;
+    if (currentPage === 'auth') return <AuthPage onLoginSuccess={handleLoginSuccess} onAdminLoginSuccess={handleAdminSuccess} />;
 
     return <Home />;
   };

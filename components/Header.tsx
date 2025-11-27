@@ -74,16 +74,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, user, onLo
         { id: 'announcements', label: 'Announcements' }
       ]
     },
-    { 
-      id: 'donate', 
-      label: 'Donate', 
-      icon: 'fa-donate',
-      children: [
-        { id: 'donate-zakat', label: 'Pay Zakat' },
-        { id: 'donate-sadaqah', label: 'Sadaqah' },
-        { id: 'donate-online', label: 'Online Payment' }
-      ]
-    },
     { id: 'contact', label: 'Contact', icon: 'fa-envelope' },
   ];
 
